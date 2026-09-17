@@ -1,0 +1,48 @@
+
+name: Docker Todo App Test
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  docker-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: docker compose build
+
+      - name: Start application
+        run: docker compose up -d
+
+      - name: Show running containers
+        run: docker compose ps
+
+      - name: Test backend
+        run: |
+          sleep 10
+          curl --fail http://localhost:5000/todos
+
+      - name: Test frontend
+        run: |
+          curl --fail http://localhost:5173
+
+      - name: Show logs if something fails
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop application
+        if: always()
+        run: docker compose down
+
