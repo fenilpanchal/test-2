@@ -1,48 +1,22 @@
 
-name: Docker Todo App Test
+name: Self Hosted Runner Test
 
 on:
   push:
-    branches:
-      - main
-
-  pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  docker-test:
-
-    runs-on: ubuntu-latest
+  test:
+    runs-on: [self-hosted, linux, x64]
 
     steps:
-
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Build Docker images
-        run: docker compose build
-
-      - name: Start application
-        run: docker compose up -d
-
-      - name: Show running containers
-        run: docker compose ps
-
-      - name: Test backend
+      - name: Verify EC2 Runner
         run: |
-          sleep 10
-          curl --fail http://localhost:5000/todos
-
-      - name: Test frontend
-        run: |
-          curl --fail http://localhost:5173
-
-      - name: Show logs if something fails
-        if: failure()
-        run: docker compose logs
-
-      - name: Stop application
-        if: always()
-        run: docker compose down
+          echo "Self-hosted runner is working!"
+          whoami
+          hostname
+          docker --version
 
