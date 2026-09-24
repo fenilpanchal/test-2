@@ -55,8 +55,8 @@ jobs:
       - name: Copy deployment files
         run: |
           ssh -i ${{ secrets.EC2_SSH_KEY }} \
-            ubuntu@65.2.184.211 \
-            "mkdir -p /home/ubuntu/todo-app"
+          ubuntu@65.2.184.211 \
+          "mkdir -p /home/ubuntu/todo-app"
 
           scp -i ${{ secrets.EC2_SSH_KEY }} \
           /home/test/brainer/docker-compose.yml /home/test/brainer/.env \
@@ -65,8 +65,8 @@ jobs:
       # 9. Pull images and deploy on App C2
       - name: Deploy application
         run: |
-          ssh -i ~/.ssh/deploy_key \
-            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} << 'EOF'
+          ssh -i ${{ secrets.EC2_SSH_KEY }} \
+            ubuntu@65.2.184.211 << 'EOF'
               set -e
               cd "/home/ubuntu/todo-app"
 
