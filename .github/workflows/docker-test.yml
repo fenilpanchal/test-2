@@ -60,7 +60,7 @@ jobs:
 
           scp -i ${{ secrets.EC2_SSH_KEY }} \
           /home/test/brainer/docker-compose.yml /home/test/brainer/.env \
-          ubuntu@65.2.184.211:/home/ubuntu/todo-app/ 
+          ubuntu@65.2.184.211:/home/ubuntu/ 
 
       # 9. Pull images and deploy on App C2
       - name: Deploy application
