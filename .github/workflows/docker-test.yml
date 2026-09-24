@@ -62,7 +62,7 @@ jobs:
           /home/test/brainer/ docker-compose.yml /home/test/brainer/ .env \
             ubuntu@$65.2.184.211:/home/ubuntu/todo-app 
 
-      # 9. Pull images and deploy on App EC2
+      # 9. Pull images and deploy on App C2
       - name: Deploy application
         run: |
           ssh -i ~/.ssh/deploy_key \
