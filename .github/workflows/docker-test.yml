@@ -1,11 +1,10 @@
-
-
 name: Todo App CI-CD
 
 on:
   push:
     branches:
       - main
+
   workflow_dispatch:
 
 permissions:
@@ -15,24 +14,50 @@ permissions:
 jobs:
   deploy:
     name: Build, Push and Deploy
+
     runs-on: [self-hosted, linux, x64]
 
     env:
-      AWS_REGION: ap-south-1
+      AWS_REGION: ${{ vars.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
-      ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com
+
+      ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+
       IMAGE_TAG: ${{ github.sha }}
 
     steps:
+
+      # --------------------------------------------------
+      # 1. Checkout source code
+      # --------------------------------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
+
+      # --------------------------------------------------
+      # 2. Configure AWS using GitHub OIDC
+      # --------------------------------------------------
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+
+      # --------------------------------------------------
+      # 3. Login to Amazon ECR
+      # --------------------------------------------------
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 4. Build and push frontend image
+
+      # --------------------------------------------------
+      # 4. Build and Push Frontend
+      # --------------------------------------------------
       - name: Build and push frontend
         run: |
+
           docker build \
             -t $ECR_REGISTRY/${{ vars.ECR_FRONTEND_REPO }}:$IMAGE_TAG \
             ./frontend
@@ -40,9 +65,13 @@ jobs:
           docker push \
             $ECR_REGISTRY/${{ vars.ECR_FRONTEND_REPO }}:$IMAGE_TAG
 
-      # 5. Build and push backend image
+
+      # --------------------------------------------------
+      # 5. Build and Push Backend
+      # --------------------------------------------------
       - name: Build and push backend
         run: |
+
           docker build \
             -t $ECR_REGISTRY/${{ vars.ECR_BACKEND_REPO }}:$IMAGE_TAG \
             ./backend
@@ -51,32 +80,96 @@ jobs:
             $ECR_REGISTRY/${{ vars.ECR_BACKEND_REPO }}:$IMAGE_TAG
 
 
+      # --------------------------------------------------
+      # 6. Create SSH key on Runner
+      # --------------------------------------------------
+      - name: Setup SSH key
+        run: |
+
+          mkdir -p ~/.ssh
+
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+
+          chmod 600 ~/.ssh/deploy_key
+
+
+      # --------------------------------------------------
+      # 7. Test SSH connection to Application EC2
+      # --------------------------------------------------
+      - name: Test EC2 SSH connection
+        run: |
+
+          ssh \
+            -o StrictHostKeyChecking=no \
+            -i ~/.ssh/deploy_key \
+            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} \
+            "echo SSH connection successful && hostname"
+
+
+      # --------------------------------------------------
+      # 8. Create application directory
+      # --------------------------------------------------
+      - name: Create application directory
+        run: |
+
+          ssh \
+            -o StrictHostKeyChecking=no \
+            -i ~/.ssh/deploy_key \
+            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} \
+            "mkdir -p ${{ vars.EC2_APP_DIR }}"
+
+
+      # --------------------------------------------------
+      # 10. Copy Docker Compose and .env to EC2
+      # --------------------------------------------------
       - name: Copy deployment files
         run: |
-           ssh -i ${{ secrets.EC2_SSH_KEY }} \
-           ubuntu@65.2.184.211 \
-           "mkdir -p /home/ubuntu/todo-app"
 
-          scp -i ${{ secrets.EC2_SSH_KEY }} \
-          /home/test/brainer/docker-compose.yml /home/test/brainer/.env \
-          ubuntu@65.2.184.211:/home/ubuntu/todo-app/ 
+          scp \
+            -o StrictHostKeyChecking=no \
+            -i ~/.ssh/deploy_key \
+            docker-compose.yml \
+            .env \
+            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }}:${{ vars.EC2_APP_DIR }}/
 
-      # 9. Pull images and deploy on App C2
+
+      # --------------------------------------------------
+      # 11. Deploy application
+      # --------------------------------------------------
       - name: Deploy application
         run: |
-          ssh -i ${{ secrets.EC2_SSH_KEY }} \
-            ubuntu@65.2.184.211 << 'EOF'
-              set -e
-              cd "/home/ubuntu/todo-app"
 
-              aws ecr get-login-password \
-                --region "ap-south-1" \
-                | docker login \
-                  --username AWS \
-                  --password-stdin "${{ env.ECR_REGISTRY }}"
+          ssh \
+            -o StrictHostKeyChecking=no \
+            -i ~/.ssh/deploy_key \
+            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} << EOF
 
-              sudo docker compose pull
-              sudo docker compose up -d
+            set -e
 
-              sudo docker compose ps
+            cd "${{ vars.EC2_APP_DIR }}"
+
+            echo "Logging into Amazon ECR..."
+
+            aws ecr get-login-password \
+              --region "${{ vars.AWS_REGION }}" \
+              | sudo docker login \
+                --username AWS \
+                --password-stdin "${{ env.ECR_REGISTRY }}"
+
+
+            echo "Pulling latest images..."
+
+            sudo docker compose pull
+
+
+            echo "Starting application..."
+
+            sudo docker compose up -d
+
+
+            echo "Running containers..."
+
+            sudo docker compose ps
+
           EOF
+
