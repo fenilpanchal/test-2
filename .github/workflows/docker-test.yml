@@ -54,13 +54,13 @@ jobs:
        # 8. Copy Compose file and environment to App EC2
       - name: Copy deployment files
         run: |
-          ssh -i ${{ secrets.EC2_SSH_KEY }} \
-          ubuntu@65.2.184.211 \
-          "mkdir -p /home/ubuntu/todo-app"
+          # ssh -i ${{ secrets.EC2_SSH_KEY }} \
+          # ubuntu@65.2.184.211 \
+          # "mkdir -p /home/ubuntu/todo-app"
 
           scp -i ${{ secrets.EC2_SSH_KEY }} \
           /home/test/brainer/docker-compose.yml /home/test/brainer/.env \
-          ubuntu@65.2.184.211:/home/ubuntu/ 
+          ubuntu@65.2.184.211:/home/ubuntu/todo-app/ 
 
       # 9. Pull images and deploy on App C2
       - name: Deploy application
