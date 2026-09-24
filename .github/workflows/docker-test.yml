@@ -1,5 +1,4 @@
 
-
 name: Todo App CI-CD
 
 on:
@@ -16,39 +15,9 @@ jobs:
   deploy:
     name: Build, Push and Deploy
     runs-on: [self-hosted, linux, x64]
-
-    env:
-      AWS_REGION: ap-south-1
-      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
-      ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com
-      IMAGE_TAG: ${{ github.sha }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-
-      # 4. Build and push frontend image
-      - name: Build and push frontend
+        
+      - name: Check AWS credentials
         run: |
-          docker build \
-            -t $ECR_REGISTRY/${{ vars.ECR_FRONTEND_REPO }}:$IMAGE_TAG \
-            ./frontend
-
-          docker push \
-            $ECR_REGISTRY/${{ vars.ECR_FRONTEND_REPO }}:$IMAGE_TAG
-
-      # 5. Build and push backend image
-      - name: Build and push backend
-        run: |
-          docker build \
-            -t $ECR_REGISTRY/${{ vars.ECR_BACKEND_REPO }}:$IMAGE_TAG \
-            ./backend
-
-          docker push \
-            $ECR_REGISTRY/${{ vars.ECR_BACKEND_REPO }}:$IMAGE_TAG
-
-
-
+          aws sts get-caller-identity
+          aws configure list
