@@ -55,12 +55,12 @@ jobs:
       - name: Copy deployment files
         run: |
           ssh -i ${{ secrets.EC2_SSH_KEY }} \
-            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} \
-            "mkdir -p ${{ vars.EC2_APP_DIR }}"
+            ubuntu@65.2.184.211 \
+            "mkdir -p /home/ubuntu/todo-app"
 
           scp -i ${{ secrets.EC2_SSH_KEY }} \
-            docker-compose.yml .env \
-            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }}:/home/test/brainer/
+          /home/test/brainer/ docker-compose.yml /home/test/brainer/ .env \
+            ubuntu@$65.2.184.211:/home/ubuntu/todo-app 
 
       # 9. Pull images and deploy on App EC2
       - name: Deploy application
@@ -68,10 +68,10 @@ jobs:
           ssh -i ~/.ssh/deploy_key \
             ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} << 'EOF'
               set -e
-              cd "${{ vars.EC2_APP_DIR }}"
+              cd "/home/ubuntu/todo-app"
 
               aws ecr get-login-password \
-                --region "${{ vars.AWS_REGION }}" \
+                --region "ap-south-1" \
                 | docker login \
                   --username AWS \
                   --password-stdin "${{ env.ECR_REGISTRY }}"
