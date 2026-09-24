@@ -59,7 +59,7 @@ jobs:
             "mkdir -p /home/ubuntu/todo-app"
 
           scp -i ${{ secrets.EC2_SSH_KEY }} \
-          /home/test/brainer/ docker-compose.yml /home/test/brainer/ .env \
+          /home/test/brainer/docker-compose.yml /home/test/brainer/.env \
             ubuntu@$65.2.184.211:/home/ubuntu/todo-app 
 
       # 9. Pull images and deploy on App C2
