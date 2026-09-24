@@ -1,22 +1,63 @@
 
-name: Self Hosted Runner Test
+
+name: Todo App CI-CD
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
-  test:
+  deploy:
+    name: Build, Push and Deploy
     runs-on: [self-hosted, linux, x64]
 
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+      ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+      IMAGE_TAG: ${{ github.sha }}
+
     steps:
-      - name: Checkout Code
+      # 1. Download source code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Verify EC2 Runner
+      # 2. Authenticate to AWS using GitHub OIDC
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # 3. Login to ECR
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 4. Build and push frontend image
+      - name: Build and push frontend
         run: |
-          echo "Self-hosted runner is working!"
-          whoami
-          hostname
-          docker --version
+          docker build \
+            -t $ECR_REGISTRY/${{ vars.ECR_FRONTEND_REPO }}:$IMAGE_TAG \
+            ./frontend
+
+          docker push \
+            $ECR_REGISTRY/${{ vars.ECR_FRONTEND_REPO }}:$IMAGE_TAG
+
+      # 5. Build and push backend image
+      - name: Build and push backend
+        run: |
+          docker build \
+            -t $ECR_REGISTRY/${{ vars.ECR_BACKEND_REPO }}:$IMAGE_TAG \
+            ./backend
+
+          docker push \
+            $ECR_REGISTRY/${{ vars.ECR_BACKEND_REPO }}:$IMAGE_TAG
+
+
 
