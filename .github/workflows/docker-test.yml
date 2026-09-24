@@ -24,7 +24,6 @@ jobs:
       IMAGE_TAG: ${{ github.sha }}
 
     steps:
-      # 1. Download source code
       - name: Checkout code
         uses: actions/checkout@v4
 
