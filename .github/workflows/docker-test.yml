@@ -50,3 +50,37 @@ jobs:
           docker push \
             $ECR_REGISTRY/${{ vars.ECR_BACKEND_REPO }}:$IMAGE_TAG
 
+
+
+
+
+            # 8. Copy Compose file and environment to App EC2
+      - name: Copy deployment files
+        run: |
+          ssh -i ${{ secrets.EC2_SSH_KEY }} \
+            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} \
+            "mkdir -p ${{ vars.EC2_APP_DIR }}"
+
+          scp -i ${{ secrets.EC2_SSH_KEY }} \
+            docker-compose.yml .env \
+            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }}:${{ vars.EC2_APP_DIR }}/
+
+      # 9. Pull images and deploy on App EC2
+      - name: Deploy application
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} << 'EOF'
+              set -e
+              cd "${{ vars.EC2_APP_DIR }}"
+
+              aws ecr get-login-password \
+                --region "${{ vars.AWS_REGION }}" \
+                | docker login \
+                  --username AWS \
+                  --password-stdin "${{ env.ECR_REGISTRY }}"
+
+              sudo docker compose pull
+              sudo docker compose up -d
+
+              sudo docker compose ps
+          EOF
