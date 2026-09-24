@@ -51,9 +51,6 @@ jobs:
             $ECR_REGISTRY/${{ vars.ECR_BACKEND_REPO }}:$IMAGE_TAG
 
 
-
-
-
        # 8. Copy Compose file and environment to App EC2
       - name: Copy deployment files
         run: |
@@ -63,7 +60,7 @@ jobs:
 
           scp -i ${{ secrets.EC2_SSH_KEY }} \
             docker-compose.yml .env \
-            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }}:${{ vars.EC2_APP_DIR }}/
+            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }}:/home/test/brainer/
 
       # 9. Pull images and deploy on App EC2
       - name: Deploy application
