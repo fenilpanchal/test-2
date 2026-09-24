@@ -54,7 +54,7 @@ jobs:
 
 
 
-            # 8. Copy Compose file and environment to App EC2
+       # 8. Copy Compose file and environment to App EC2
       - name: Copy deployment files
         run: |
           ssh -i ${{ secrets.EC2_SSH_KEY }} \
