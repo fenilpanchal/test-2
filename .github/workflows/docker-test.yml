@@ -120,7 +120,8 @@ jobs:
         run: |
 
           scp -i ~/.ssh/deploy_key \
-           docker-compose.yml \
+           docker-compose2.yml \
+           .env \
            ${{ vars.EC2_USER }}@15.206.166.237:${{ vars.EC2_APP_DIR }}/
 
       # --------------------------------------------------
