@@ -80,25 +80,11 @@ jobs:
           EOF
 
 
-      # --------------------------------------------------
-      # 6. Create SSH key on Runner
-      # --------------------------------------------------
-      - name: Setup SSH key
-        run: |
-
-          mkdir -p ~/.ssh
-
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
-
-          chmod 600 ~/.ssh/deploy_key
-
-      # --------------------------------------------------
       # 7. Test SSH connection to Application EC2
-      # --------------------------------------------------
       - name: Test EC2 SSH connection
         run: |
 
-          ssh -i ~/.ssh/deploy_key \
+          ssh -i ${{ secrets.EC2_SSH_KEY }} \
             ${{ vars.EC2_USER }}@15.206.166.237 \
             "echo SSH connection successful && hostname"
 
@@ -109,7 +95,7 @@ jobs:
       - name: Create application directory
         run: |
 
-          ssh -i ~/.ssh/deploy_key \
+          ssh -i ${{ secrets.EC2_SSH_KEY }} \
             ${{ vars.EC2_USER }}@15.206.166.237 \
             "mkdir -p ${{ vars.EC2_APP_DIR }}"
 
@@ -120,9 +106,9 @@ jobs:
       - name: Copy deployment files
         run: |
 
-          scp -i ~/.ssh/deploy_key \
+          scp -i ${{ secrets.EC2_SSH_KEY }} \
            docker-compose2.yml \
-           database/init.sql \
+           -r database/ \
            .env \
            ${{ vars.EC2_USER }}@15.206.166.237:${{ vars.EC2_APP_DIR }}/
 
@@ -132,9 +118,7 @@ jobs:
       - name: Deploy application
         run: |
 
-          ssh \
-            -o StrictHostKeyChecking=no \
-            -i ~/.ssh/deploy_key \
+          ssh -i ${{ secrets.EC2_SSH_KEY }} \
             ${{ vars.EC2_USER }}@15.206.166.237 << EOF
 
             set -e
