@@ -67,17 +67,19 @@ jobs:
           docker push \
             $ECR_REGISTRY/${{ vars.ECR_BACKEND_REPO }}:$IMAGE_TAG
 
-      
-      - name: Create deployment .env
-        env:
-          DB_PASS: ${{ secrets.DB_PASS }}
-          DB_DATABASE: ${{ secrets.DB_DATABASE }}  
+      - name: Create production .env
         run: |
-          {
-            echo "ECR_REGISTRY=$ECR_REGISTRY"
-            echo "IMAGE_TAG=$IMAGE_TAG"
-            echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD"
-          } > .env
+
+          cat > .env <<EOF
+          ECR_REGISTRY=$ECR_REGISTRY
+          ECR_BACKEND_REPO=${{ vars.ECR_BACKEND_REPO }}
+          ECR_FRONTEND_REPO=${{ vars.ECR_FRONTEND_REPO }}
+          IMAGE_TAG=$IMAGE_TAG
+          DB_PASS=${{ secrets.DB_PASS }}
+          DB_DATABASE=${{ secrets.DB_DATABASE }}
+          EOF
+
+
 
       # --------------------------------------------------
       # 6. Create SSH key on Runner
