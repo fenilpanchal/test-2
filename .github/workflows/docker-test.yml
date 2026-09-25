@@ -108,7 +108,7 @@ jobs:
 
           scp -i ${{ secrets.EC2_SSH_KEY }} \
            docker-compose2.yml \
-           database/ \
+           database \
            .env \
            ${{ vars.EC2_USER }}@15.206.166.237:${{ vars.EC2_APP_DIR }}/
 
