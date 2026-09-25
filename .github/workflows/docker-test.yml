@@ -96,7 +96,7 @@ jobs:
         run: |
 
           ssh -i ~/.ssh/deploy_key \
-            ${{ vars.EC2_USER }}@15.206.166.237 \
+            ${{ vars.EC2_USER }}@13.207.84.138 \
             "mkdir -p ${{ vars.EC2_APP_DIR }}/database"
 
 
@@ -110,7 +110,7 @@ jobs:
            docker-compose-test.yml \
            .env \
            database/init.sql \
-           ${{ vars.EC2_USER }}@15.206.166.237:${{ vars.EC2_APP_DIR }}/
+           ${{ vars.EC2_USER }}@13.207.84.138:${{ vars.EC2_APP_DIR }}/
 
       # --------------------------------------------------
       # 11. Deploy application
@@ -119,7 +119,7 @@ jobs:
         run: |
 
           ssh -i ~/.ssh/deploy_key \
-            ${{ vars.EC2_USER }}@15.206.166.237 << EOF
+            ${{ vars.EC2_USER }}@13.207.84.138 << EOF
 
             set -e
 
