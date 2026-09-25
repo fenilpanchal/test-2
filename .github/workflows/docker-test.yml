@@ -111,7 +111,7 @@ jobs:
 
           scp -i ~/.ssh/deploy_key \
            docker-compose.yml \
-           .env \
+           # .env \
            ${{ vars.EC2_USER }}@15.206.166.237:${{ vars.EC2_APP_DIR }}
 
 
