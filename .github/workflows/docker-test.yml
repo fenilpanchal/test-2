@@ -87,9 +87,7 @@ jobs:
       - name: Test EC2 SSH connection
         run: |
 
-          ssh \
-            -o StrictHostKeyChecking=no \
-            -i ~/.ssh/deploy_key \
+          ssh -i ~/.ssh/deploy_key \
             ${{ vars.EC2_USER }}@15.206.166.237 \
             "echo SSH connection successful && hostname"
 
@@ -100,9 +98,7 @@ jobs:
       - name: Create application directory
         run: |
 
-          ssh \
-            -o StrictHostKeyChecking=no \
-            -i ~/.ssh/deploy_key \
+          ssh -i ~/.ssh/deploy_key \
             ${{ vars.EC2_USER }}@15.206.166.237 \
             "mkdir -p ${{ vars.EC2_APP_DIR }}"
 
@@ -113,11 +109,9 @@ jobs:
       - name: Copy deployment files
         run: |
 
-          scp \
-            -o StrictHostKeyChecking=no \
-            -i ~/.ssh/deploy_key \
-           /home/test/brainer/docker-compose.yml \
-           /home/test/brainer/.env \
+          scp -i ~/.ssh/deploy_key \
+           /home/test/brainer docker-compose.yml \
+           /home/test/brainer .env \
             ${{ vars.EC2_USER }}@15.206.166.237:${{ vars.EC2_APP_DIR }}/
 
 
