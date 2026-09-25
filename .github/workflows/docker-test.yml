@@ -110,9 +110,9 @@ jobs:
         run: |
 
           scp -i ~/.ssh/deploy_key \
-           /home/test/brainer/docker-compose.yml \
-           /home/test/brainer/.env \
-            ${{ vars.EC2_USER }}@15.206.166.237:${{ vars.EC2_APP_DIR}}
+           docker-compose.yml \
+           .env \
+           ${{ vars.EC2_USER }}@15.206.166.237:${{ vars.EC2_APP_DIR }}
 
 
       # --------------------------------------------------
