@@ -79,12 +79,21 @@ jobs:
           DB_DATABASE=${{ secrets.DB_DATABASE }}
           EOF
 
+ 
+      - name: Setup SSH key
+        run: |
+
+          mkdir -p ~/.ssh
+
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+
+          chmod 600 ~/.ssh/deploy_key
 
       # 7. Test SSH connection to Application EC2
       - name: Test EC2 SSH connection
         run: |
 
-          ssh -i ${{ secrets.EC2_SSH_KEY }} \
+          ssh ~/.ssh/deploy_key \
             ${{ vars.EC2_USER }}@15.206.166.237 \
             "echo SSH connection successful && hostname"
 
@@ -95,7 +104,7 @@ jobs:
       - name: Create application directory
         run: |
 
-          ssh -i ${{ secrets.EC2_SSH_KEY }} \
+          ssh -i ~/.ssh/deploy_key \
             ${{ vars.EC2_USER }}@15.206.166.237 \
             "mkdir -p ${{ vars.EC2_APP_DIR }}"
 
@@ -106,7 +115,7 @@ jobs:
       - name: Copy deployment files
         run: |
 
-          scp -i ${{ secrets.EC2_SSH_KEY }} \
+          scp -i ~/.ssh/deploy_key \
            docker-compose2.yml \
            database \
            .env \
@@ -118,7 +127,7 @@ jobs:
       - name: Deploy application
         run: |
 
-          ssh -i ${{ secrets.EC2_SSH_KEY }} \
+          ssh -i ~/.ssh/deploy_key \
             ${{ vars.EC2_USER }}@15.206.166.237 << EOF
 
             set -e
