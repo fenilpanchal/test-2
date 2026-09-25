@@ -18,10 +18,10 @@ jobs:
     runs-on: [self-hosted, linux, x64]
 
     env:
-      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_REGION: ap-south-1              # ${{ vars.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
 
-      ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+      ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com
 
       IMAGE_TAG: ${{ github.sha }}
 
@@ -32,16 +32,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-
-      # --------------------------------------------------
-      # 2. Configure AWS using GitHub OIDC
-      # --------------------------------------------------
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION }}
 
 
       # --------------------------------------------------
@@ -91,7 +81,6 @@ jobs:
 
           chmod 600 ~/.ssh/deploy_key
 
-
       # --------------------------------------------------
       # 7. Test SSH connection to Application EC2
       # --------------------------------------------------
@@ -101,7 +90,7 @@ jobs:
           ssh \
             -o StrictHostKeyChecking=no \
             -i ~/.ssh/deploy_key \
-            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} \
+            ${{ vars.EC2_USER }}@15.206.166.237 \
             "echo SSH connection successful && hostname"
 
 
@@ -114,7 +103,7 @@ jobs:
           ssh \
             -o StrictHostKeyChecking=no \
             -i ~/.ssh/deploy_key \
-            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} \
+            ${{ vars.EC2_USER }}@15.206.166.237 \
             "mkdir -p ${{ vars.EC2_APP_DIR }}"
 
 
@@ -127,9 +116,9 @@ jobs:
           scp \
             -o StrictHostKeyChecking=no \
             -i ~/.ssh/deploy_key \
-            docker-compose.yml \
-            .env \
-            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }}:${{ vars.EC2_APP_DIR }}/
+           /home/test/brainer/docker-compose.yml \
+           /home/test/brainer/.env \
+            ${{ vars.EC2_USER }}@15.206.166.237:${{ vars.EC2_APP_DIR }}/
 
 
       # --------------------------------------------------
@@ -141,7 +130,7 @@ jobs:
           ssh \
             -o StrictHostKeyChecking=no \
             -i ~/.ssh/deploy_key \
-            ${{ vars.EC2_USER }}@${{ vars.EC2_HOST }} << EOF
+            ${{ vars.EC2_USER }}@15.206.166.237 << EOF
 
             set -e
 
@@ -150,7 +139,7 @@ jobs:
             echo "Logging into Amazon ECR..."
 
             aws ecr get-login-password \
-              --region "${{ vars.AWS_REGION }}" \
+              --region "ap-south-1" \
               | sudo docker login \
                 --username AWS \
                 --password-stdin "${{ env.ECR_REGISTRY }}"
