@@ -72,7 +72,7 @@ jobs:
       - name: Create deployment .env
         env:
           DB_PASS: ${{ secrets.DB_PASS }}
-          DB_DATABASE: ${{ secret.DB_DATABASE }}  
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}  
         run: |
           {
             echo "ECR_REGISTRY=$ECR_REGISTRY"
