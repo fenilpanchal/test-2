@@ -89,15 +89,6 @@ jobs:
 
           chmod 600 ~/.ssh/deploy_key
 
-      # 7. Test SSH connection to Application EC2
-      - name: Test EC2 SSH connection
-        run: |
-
-          ssh -i ~/.ssh/deploy_key \
-            ${{ vars.EC2_USER }}@15.206.166.237 \
-            "echo SSH connection successful && hostname"
-
-
       # --------------------------------------------------
       # 8. Create application directory
       # --------------------------------------------------
@@ -106,7 +97,7 @@ jobs:
 
           ssh -i ~/.ssh/deploy_key \
             ${{ vars.EC2_USER }}@15.206.166.237 \
-            "mkdir -p ${{ vars.EC2_APP_DIR }}"
+            "mkdir -p ${{ vars.EC2_APP_DIR }}/database"
 
 
       # --------------------------------------------------
@@ -117,9 +108,9 @@ jobs:
 
           scp -i ~/.ssh/deploy_key \
            docker-compose2.yml \
-           database \
            .env \
-           ${{ vars.EC2_USER }}@15.206.166.237:${{ vars.EC2_APP_DIR }}/
+           database/init.sql \
+           ${{ vars.EC2_USER }}@15.206.166.237:${{ vars.EC2_APP_DIR }}/database/
 
       # --------------------------------------------------
       # 11. Deploy application
