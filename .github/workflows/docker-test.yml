@@ -93,7 +93,7 @@ jobs:
       - name: Test EC2 SSH connection
         run: |
 
-          ssh ~/.ssh/deploy_key \
+          ssh -i ~/.ssh/deploy_key \
             ${{ vars.EC2_USER }}@15.206.166.237 \
             "echo SSH connection successful && hostname"
 
