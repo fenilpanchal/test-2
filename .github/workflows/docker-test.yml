@@ -68,6 +68,17 @@ jobs:
           docker push \
             $ECR_REGISTRY/${{ vars.ECR_BACKEND_REPO }}:$IMAGE_TAG
 
+      
+      - name: Create deployment .env
+        env:
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DB_DATABASE: ${{ secret.DB_DATABASE }}  
+        run: |
+          {
+            echo "ECR_REGISTRY=$ECR_REGISTRY"
+            echo "IMAGE_TAG=$IMAGE_TAG"
+            echo "MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD"
+          } > .env
 
       # --------------------------------------------------
       # 6. Create SSH key on Runner
@@ -111,7 +122,7 @@ jobs:
 
           scp -i ~/.ssh/deploy_key \
            docker-compose.yml \
-           .env \
+    
            ${{ vars.EC2_USER }}@15.206.166.237:${{ vars.EC2_APP_DIR }}
 
 
